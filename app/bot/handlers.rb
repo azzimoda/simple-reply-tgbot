@@ -52,7 +52,7 @@ class App
     bot.api.send_message(
       chat_id: message.chat.id, message_thread_id: message.message_thread_id,
       reply_parameters: { message_id: message.message_id }.to_json,
-      text: 'Welcome!'
+      text: 'Welcome! Use /help for command list'
     )
   end
 
