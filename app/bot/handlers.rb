@@ -8,6 +8,8 @@ class App
     end
   rescue Telegram::Bot::Exceptions::ResponseError => e
     log.error "Telegram API error: #{e.message}"
+  rescue StandardError => e
+    log.error "Unexpected error: #{e.message}"
   end
 
   def handle_message(message)
@@ -28,7 +30,7 @@ class App
   def handle_private_message(message)
     log.debug 'handle_private_message'
     _user = User.find_or_create_by tg_user_id: message.from.id
-    if message.text.start_with? '/' then handle_command message
+    if message.text&.start_with?('/') then handle_command message
     else handle_custom_command message
     end
   end
@@ -218,10 +220,10 @@ class App
       )
 
     in ['add', response]
+      log.debug "Handling response: #{response.inspect}..."
       command = Command.new user: user, key: user.key_to_add, response: message.text
-      log.debug command.save
+      command.save
 
-      log.debug "Handling response: #{response}"
       user.state = nil
       user.key_to_add = nil
       user.save
