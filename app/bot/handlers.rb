@@ -27,11 +27,23 @@ class App
 
     log.debug "Received update:\n#{message.to_h.pretty_inspect}"
 
-    if message.chat.type == 'private'
-      handle_private_message message
-    else
-      handle_group_message message
-    end
+    res =
+      if message.chat.type == 'private'
+        handle_private_message message
+      else
+        handle_group_message message
+      end
+    content =
+      if message.text then message.text
+      elsif message.sticker then '<sticker>'
+      elsif message.photo then '<photo>'
+      else '<unknown>'
+      end
+    log.info "Message handled:\n" \
+      "\tChat: #{message.chat.title} @#{message.chat.username} ##{message.chat.id}" \
+      "\tUser: #{message.from&.title} @#{message.from&.username} ##{message.from&.id}" \
+      "\tContent: #{content}"
+    res
   end
 
   def handle_private_message(message)
