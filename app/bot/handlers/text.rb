@@ -49,6 +49,10 @@ class App
       return bot.api.answer_message message, reply: true, text: 'Key must be a text, try again or /cancel'
     end
 
+    if Command.exists? user: user, key: message.text.downcase
+      return bot.api.answer_message message, reply: true, text: 'Command already exists, try again or /cancel'
+    end
+
     user.update key_to_add: message.text.downcase
 
     bot.api.answer_message message, reply: true, text: "Key: #{message.text}\nNow send me what to response or /cancel"
