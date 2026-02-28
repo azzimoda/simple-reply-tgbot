@@ -24,6 +24,12 @@ class App
     rescue Interrupt
       puts
       log.info 'Stopping app...'
+    rescue StandardError => e
+      puts
+      log.error "Unexpected error: #{e.message}"
+      log.error 'Trying to restart in 10 seconds...'
+      sleep 10
+      retry
     end
   end
 
