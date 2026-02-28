@@ -20,14 +20,16 @@ class App
     Telegram::Bot::Client.run ENV['BOT_TOKEN'] do |bot|
       @bot = bot
       bot.api.set_my_commands commands: my_commands
+      log.info 'Listening...'
       bot.listen { handle_update it }
     rescue Interrupt
       puts
       log.info 'Stopping app...'
     rescue StandardError => e
       puts
-      log.error "Unexpected error: #{e.message}"
-      log.error 'Trying to restart in 10 seconds...'
+      log.error "run: Unexpected error: #{e.message}"
+      log.error "Backtrace:\n#{e.backtrace.join("\n")}"
+      log.info 'Trying to restart in 10 seconds...'
       sleep 10
       retry
     end
