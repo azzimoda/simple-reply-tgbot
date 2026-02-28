@@ -171,7 +171,12 @@ class App
     user.state = 'remove'
     user.save
 
-    markup = { keyboard: user.commands.map { [it.key] }, resize_keyboard: true, one_time_keyboard: true }.to_json
+    markup = {
+      keyboard: user.commands.map { [it.key] },
+      resize_keyboard: true,
+      one_time_keyboard: true,
+      selective: true
+    }.to_json
     bot.api.send_message(
       chat_id: chat_id, message_thread_id: message.message_thread_id,
       reply_parameters: { message_id: message.message_id }.to_json,
