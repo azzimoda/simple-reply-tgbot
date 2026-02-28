@@ -58,7 +58,7 @@ class App
       end
     end
 
-    user.update state: STATE_DEFAULT
+    user.update state: STATE_REMOVE
 
     markup = {
       keyboard: user.commands.map { [it.key] },
