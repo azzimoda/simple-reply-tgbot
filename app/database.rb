@@ -3,6 +3,8 @@
 require 'active_record'
 require 'fileutils'
 
+require_relative 'logger'
+
 DB_FILE = 'database.db'
 
 ActiveRecord::Base.establish_connection(
@@ -28,8 +30,27 @@ ActiveRecord::Schema.define do
   end
   add_index :commands, :user_id, if_not_exists: true
   add_index :commands, :key, if_not_exists: true
+
+  create_table :migrations, if_not_exists: true do |t|
+    t.string :name, null: false
+    t.timestamps
+  end
+end
+
+class Migration < ActiveRecord::Base
+end
+
+# Find and apply migrations
+MIGRATIONS = File.expand_path('../migrations/*.sql', __dir__)
+Dir[MIGRATIONS].each do |filename|
+  next if Migration.find_by name: filename
+
+  sql = File.read filename
+  log.debug "Executing migration #{filename.inspect}..."
+  ActiveRecord::Migration.new.execute(sql)
+  Migration.create name: filename
 end
 
 # Require all models
-MODELS_DIR = File.expand_path('./models/*.rb', __dir__).freeze
-Dir[MODELS_DIR].each { require it }
+MODELS = File.expand_path('./models/*.rb', __dir__).freeze
+Dir[MODELS].each { require it }

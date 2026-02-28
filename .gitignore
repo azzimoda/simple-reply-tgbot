@@ -1,3 +1,5 @@
 .*
 !.gitignore
 *.db
+*.db-shm
+*.db-wal
