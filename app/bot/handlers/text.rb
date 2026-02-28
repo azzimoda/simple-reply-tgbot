@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+require 'json'
+
+require_relative '../helpers/api'
+require_relative '../helpers/callback_command'
+
 # App
 class App
   def handle_message_text(message)
@@ -14,6 +19,7 @@ class App
     in [STATE_REMOVE, _] then handle_remove_key message, user
     in [STATE_ADD, nil] then handle_add_key message, user
     in [STATE_ADD, _] then handle_add_response message, user
+    in [STATE_ADD_LINK, _] then handle_add_link message, user
     else handle_custom_command message
     end
   end
@@ -51,13 +57,13 @@ class App
   def handle_add_response(message, user)
     log.debug 'handle_add_response'
 
-    response =
+    command =
       case message
       when Telegram::Bot::Types::Message then handle_add_response_message message, user
       else return bot.api.answer_message message, reply: true, text: 'Unsupported message type, try again or /cancel'
       end
 
-    unless response
+    unless command
       return bot.api.answer_message(
         message,
         reply: true,
@@ -68,7 +74,14 @@ class App
     user.update state: nil, key_to_add: nil
     log.debug Command.find_by key: user.key_to_add, user: user
 
-    bot.api.answer_message message, reply: true, text: 'Command saved'
+    params =
+      if %w[text photo].include? command.response_kind
+        { reply_markup: { inline_keyboard: [[{
+          text: 'Add link',
+          callback_data: CallbackCommand.new('add_link', command.key).to_s
+        }]] }.to_json }
+      end
+    bot.api.answer_message message, reply: true, text: 'Command saved', **params
   end
 
   def handle_add_response_message(message, user)
@@ -113,6 +126,20 @@ class App
     ).tap(&:save)
   end
 
+  def handle_add_link(message, user)
+    log.debug 'handle_add_link'
+
+    command = Command.find_by user: user, key: user.key_to_add
+
+    if command
+      command.update response_button_link: message.text
+      user.update state: STATE_DEFAULT, key_to_add: nil
+      bot.api.answer_message message, reply: true, text: 'Link added successfully'
+    else
+      bot.api.answer_message message, reply: true, text: 'Failed to add link the command, try again or /cancel'
+    end
+  end
+
   def handle_custom_command(message)
     log.debug 'handle_custom_command'
 
@@ -137,7 +164,13 @@ class App
   def send_response_text(message, command)
     log.debug 'send_response_text'
 
-    bot.api.answer_message message, reply: true, text: command.response_data
+    params =
+      if command.response_button_link
+        { reply_markup: { inline_keyboard: [[{
+          text: 'Link', url: command.response_button_link
+        }]] }.to_json }
+      end
+    bot.api.answer_message message, reply: true, text: command.response_data, **params
   end
 
   def send_response_sticker(message, command)

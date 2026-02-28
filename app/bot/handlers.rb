@@ -2,8 +2,12 @@
 
 require 'pp'
 
+require_relative '../database'
+
 require_relative 'handlers/commands'
 require_relative 'handlers/text'
+require_relative 'helpers/api'
+require_relative 'helpers/callback_command'
 
 # App
 class App
@@ -12,6 +16,7 @@ class App
   def handle_update(update)
     case update
     when Telegram::Bot::Types::Message then handle_message update
+    when Telegram::Bot::Types::CallbackQuery then handle_callback_query update
     else log.warn "Unhandled update type: #{update.class}"
     end
   rescue Telegram::Bot::Exceptions::ResponseError => e
@@ -25,7 +30,7 @@ class App
     # Skip too old messages: >10 minutes
     return log.debug "Old message skipped: #{Time.at(message.date)}" if Time.at(message.date) < Time.now - 600
 
-    log.debug "Received update:\n#{message.to_h.pretty_inspect}"
+    log.debug "Received message:\n#{message.to_h.pretty_inspect}"
 
     res =
       if message.chat.type == 'private'
@@ -41,7 +46,7 @@ class App
       end
     log.info "Message handled:\n" \
       "\tChat: #{message.chat.title} @#{message.chat.username} ##{message.chat.id}" \
-      "\tUser: #{message.from&.title} @#{message.from&.username} ##{message.from&.id}" \
+      "\tUser: #{message.from&.first_name} @#{message.from&.username} ##{message.from&.id}" \
       "\tContent: #{content}"
     res
   end
@@ -82,5 +87,36 @@ class App
       reply: true,
       text: "No one of admins of this chat has registered. Please, start the bot: @#{bot.api.get_me.username}"
     )
+  end
+
+  def handle_callback_query(query)
+    log.debug 'handle_callback_query'
+
+    log.debug "Received message:\n#{query.to_h.pretty_inspect}"
+
+    command = CallbackCommand.parse query.data
+    case command.command
+    when 'add_link' then handle_callback_query_add_link query, command
+    else log.warn "Unknown command: #{command.inspect}"
+    end
+  end
+
+  def handle_callback_query_add_link(query, command)
+    log.debug 'handle_callback_query_add_link'
+
+    unless query.from.id == query.message.reply_to_message.from.id
+      return log.warn 'Button clicked not by the message sender'
+    end
+
+    user = User.find_by tg_user_id: query.from.id
+
+    user.update state: STATE_ADD_LINK, key_to_add: command.args[0] # key_to_add here stores the command key to update
+
+    bot.api.edit_message_text(
+      chat_id: query.message.chat.id,
+      message_id: query.message.message_id,
+      text: query.message.text
+    )
+    bot.api.answer_message query.message, text: 'Send a link or /cancel'
   end
 end

@@ -26,6 +26,7 @@ ActiveRecord::Schema.define do
     t.string :key, null: false
     t.string :response_kind, null: false
     t.string :response_data, null: false
+    t.string :response_button_link, null: true
     t.timestamps
   end
   add_index :commands, :user_id, if_not_exists: true

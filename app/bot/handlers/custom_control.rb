@@ -8,6 +8,7 @@ require_relative '../helpers/api'
 class App
   STATE_DEFAULT = nil
   STATE_ADD = 'add'
+  STATE_ADD_LINK = 'add_link'
   STATE_REMOVE = 'remove'
 
   private
@@ -44,7 +45,6 @@ class App
 
   def handle_command_remove(message)
     user = User.find_by tg_user_id: message.from.id
-    chat_id = message.chat.id
 
     return bot.api.answer_message message, reply: true, text: 'You have no commands' if user.commands.empty?
 
