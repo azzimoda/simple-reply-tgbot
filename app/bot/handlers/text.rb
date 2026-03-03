@@ -5,8 +5,12 @@ require 'json'
 require_relative '../helpers/api'
 require_relative '../helpers/callback_command'
 
+require_relative 'custom_commands'
+
 # App
 class App
+  private
+
   def handle_message_text(message)
     log.debug 'handle_message_text'
 
@@ -50,6 +54,7 @@ class App
     end
 
     if Command.exists? user: user, key: message.text.downcase
+      log.warn "Command already exists: #{message.text.downcase}"
       return bot.api.answer_message message, reply: true, text: 'Command already exists, try again or /cancel'
     end
 
@@ -142,58 +147,5 @@ class App
     else
       bot.api.answer_message message, reply: true, text: 'Failed to add link the command, try again or /cancel'
     end
-  end
-
-  def handle_custom_command(message)
-    log.debug 'handle_custom_command'
-
-    commands = chat_commands message.chat.id
-    log.debug "Commands: #{commands.inspect}"
-
-    commands&.each do |command|
-      next unless command.key == message.text.downcase
-
-      log.debug "Matched command: #{command.inspect}"
-
-      case command.response_kind
-      when 'text' then send_response_text message, command
-      when 'sticker' then send_response_sticker message, command
-      when 'photo' then send_response_photo message, command
-      else log.warn "Unknown response kind: #{command.response_kind}"
-      end
-      break
-    end
-  end
-
-  def send_response_text(message, command)
-    log.debug 'send_response_text'
-
-    params =
-      if command.response_button_link
-        { reply_markup: { inline_keyboard: [[{
-          text: 'Link', url: command.response_button_link
-        }]] }.to_json }
-      end
-    bot.api.answer_message message, reply: true, text: command.response_data, **params
-  end
-
-  def send_response_sticker(message, command)
-    log.debug 'send_response_sticker'
-
-    bot.api.send_sticker(
-      chat_id: message.chat.id, message_thread_id: message.message_thread_id,
-      reply_parameters: { message_id: message.message_id }.to_json,
-      sticker: command.response_data
-    )
-  end
-
-  def send_response_photo(message, command)
-    log.debug 'send_response_photo'
-
-    bot.api.send_photo(
-      chat_id: message.chat.id, message_thread_id: message.message_thread_id,
-      reply_parameters: { message_id: message.message_id }.to_json,
-      photo: command.response_data
-    )
   end
 end
