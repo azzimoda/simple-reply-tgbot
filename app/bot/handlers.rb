@@ -36,10 +36,10 @@ class App
     else handle_group_message message
     end
       .tap do
-        log.info "Message handled:\n" \
-          "\tChat: #{message.chat.title} @#{message.chat.username} ##{message.chat.id}" \
-          "\tUser: #{message.from&.first_name} @#{message.from&.username} ##{message.from&.id}" \
-          "\tContent: #{message_content message}"
+        log.info 'Message handled:' \
+          "\n\tChat: #{message.chat.title} @#{message.chat.username} ##{message.chat.id}" \
+          "\n\tUser: #{message.from&.first_name} @#{message.from&.username} ##{message.from&.id}" \
+          "\n\tContent: #{message_content message}"
       end
   end
 
