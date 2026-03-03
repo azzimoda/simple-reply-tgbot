@@ -36,4 +36,8 @@ class App
   def command_re
     @command_re ||= %r{^(/\w+)(@#{bot.api.get_me.username})?(\s+.+)?$}.freeze
   end
+
+  def send_chat_action_typing(message)
+    bot.api.send_chat_action chat_id: message.chat.id, message_thread_id: message.message_thread_id, action: 'typing'
+  end
 end

@@ -15,6 +15,10 @@ class App
     if (command = find_custom_command(message))
       log.debug "Matched command: #{command.inspect}"
 
+      send_chat_action_typing message
+      bot.api.set_message_reaction chat_id: message.chat.id, message_id: message.message_id,
+                                   reaction: [{ type: 'emoji', emoji: '❤' }]
+
       case command.response_kind
 
       when 'text'    then send_response_text    message, command

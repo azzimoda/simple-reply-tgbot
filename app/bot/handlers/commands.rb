@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative '../utils'
+
 require_relative 'custom_control'
 require_relative 'general'
 require_relative 'text'
@@ -8,6 +10,8 @@ require_relative 'text'
 class App
   def handle_command(message)
     log.debug 'handle_command'
+
+    send_chat_action_typing message
 
     case message.text =~ command_re ? Regexp.last_match(1) : message.text
 
