@@ -16,9 +16,11 @@ class App
       log.debug "Matched command: #{command.inspect}"
 
       case command.response_kind
-      when 'text' then send_response_text message, command
+
+      when 'text'    then send_response_text    message, command
       when 'sticker' then send_response_sticker message, command
-      when 'photo' then send_response_photo message, command
+      when 'photo'   then send_response_photo   message, command
+
       else log.warn "Unknown response kind: #{command.response_kind}"
       end
     end

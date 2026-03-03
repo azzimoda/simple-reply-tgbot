@@ -15,7 +15,7 @@ class App
 
   def handle_update(update)
     case update
-    when Telegram::Bot::Types::Message then handle_message update
+    when Telegram::Bot::Types::Message       then handle_message        update
     when Telegram::Bot::Types::CallbackQuery then handle_callback_query update
     else log.warn "Unhandled update type: #{update.class}"
     end
@@ -60,10 +60,8 @@ class App
     end
     _user = User.find_or_create_by tg_user_id: message.from.id
 
-    if message.text&.start_with?('/')
-      handle_command message
-    else
-      handle_message_text message
+    if message.text&.start_with?('/') then handle_command message
+    else handle_message_text message
     end
   end
 

@@ -18,7 +18,6 @@ class App
 
     user = User.find_by tg_user_id: message.from.id
 
-    log.debug "User state: #{user.pretty_inspect}"
     case [user&.state, user&.key_to_add]
     in [STATE_REMOVE, _] then handle_remove_key message, user
     in [STATE_ADD, nil] then handle_add_key message, user
