@@ -27,12 +27,19 @@ class App
 
   def handle_command_commands(message)
     commands = chat_commands message.chat.id
-    if commands.empty?
-      bot.api.answer_message message, reply: true, text: 'No one of chat admins have added commands'
-    else
-      commands = commands.map { it.key }.join(', ') # TODO: Group commands by users
-      bot.api.answer_message message, reply: true, text: "Commands of this chat: #{commands}"
-    end
+    text =
+      if commands.empty? then 'No one of chat admins have added commands'
+      else "Commands of this chat:\n\n#{format_chat_commands commands}"
+      end
+
+    bot.api.answer_message message, reply: true, text: text
+  end
+
+  def format_chat_commands(commands)
+    commands.group_by { it.user }.map do |user, commands|
+      username = bot.api.get_chat(chat_id: user.tg_user_id).then { |chat| chat&.username || chat&.first_name }
+      "@#{username}: #{commands.map { it.key }.join(', ')}"
+    end.join("\n\n")
   end
 
   def handle_command_add(message)
@@ -59,7 +66,7 @@ class App
 
     user.update state: STATE_REMOVE
 
-    bot.api.answer_message message, text: 'Send me a key of a command to remove or /cancel',
+    bot.api.answer_message message, text: 'Send me key of a command to remove or /cancel',
                                     reply_markup: remove_command_reply_markup(user)
   end
 

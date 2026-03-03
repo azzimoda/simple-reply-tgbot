@@ -13,7 +13,7 @@ class App
     log.debug 'handle_custom_command'
 
     if (command = find_custom_command(message))
-      log.debug "Matched command: #{command.inspect}"
+      log.info "Matched command: #{command.inspect}"
 
       send_chat_action_typing message
       bot.api.set_message_reaction chat_id: message.chat.id, message_id: message.message_id,
@@ -27,6 +27,8 @@ class App
 
       else log.warn "Unknown response kind: #{command.response_kind}"
       end
+    else
+      log.debug 'No matching command found'
     end
   end
 
