@@ -52,7 +52,7 @@ class App
       key = Regexp.last_match(1).strip.downcase
       if (command = user.commands.find { it.key == key })
         command.destroy
-        bot.api.answer_message message, reply: true, text: "Command \"#{command.key}\" removed"
+        return bot.api.answer_message message, reply: true, text: "Command \"#{command.key}\" removed"
       else
         bot.api.answer_message message, reply: true, text: 'No such command'
       end
