@@ -19,15 +19,19 @@ class App
 
     user = User.find_by tg_user_id: message.from.id
 
-    case [user&.state, user&.key_to_add]
+    handler =
+      case [user&.state, user&.key_to_add]
 
-    in [STATE_REMOVE,   _]   then send_chat_action_typing(message).then { handle_remove_key   message, user }
-    in [STATE_ADD,      nil] then send_chat_action_typing(message).then { handle_add_key      message, user }
-    in [STATE_ADD,      _]   then send_chat_action_typing(message).then { handle_add_response message, user }
-    in [STATE_ADD_LINK, _]   then send_chat_action_typing(message).then { handle_add_link     message, user }
+      in [STATE_REMOVE,   _]   then :handle_remove_key
+      in [STATE_ADD,      nil] then :handle_add_key
+      in [STATE_ADD,      _]   then :handle_add_response
+      in [STATE_ADD_LINK, _]   then :handle_add_link
 
-    else handle_custom_command message
-    end
+      else return handle_custom_command message
+      end
+
+    send_chat_action_typing message
+    send handler, message, user
   end
 
   def handle_remove_key(message, user)
