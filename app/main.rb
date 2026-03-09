@@ -19,7 +19,8 @@ class App
     log.info 'Starting app...'
     Telegram::Bot::Client.run ENV['BOT_TOKEN'] do |bot|
       @bot = bot
-      bot.api.set_my_commands commands: my_commands
+      bot.api.delete_my_commands scope: Telegram::Bot::Types::BotCommandScopeDefault.new.to_json
+      bot.api.set_my_commands commands: my_commands, scope: Telegram::Bot::Types::BotCommandScopeAllPrivateChats.new.to_json
       log.info 'Listening...'
       bot.listen { handle_update it }
     rescue Interrupt
