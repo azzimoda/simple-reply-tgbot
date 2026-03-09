@@ -33,6 +33,8 @@ class App
   end
 
   def find_custom_command(message)
+    return unless message.text
+
     chat_commands(message.chat.id)&.find { it.key == message.text.downcase }
   end
 
