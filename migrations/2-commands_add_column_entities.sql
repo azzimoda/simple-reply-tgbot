@@ -1,0 +1,1 @@
+ALTER TABLE commands ADD COLUMN entities TEXT NOT NULL DEFAULT "[]"; -- JSON

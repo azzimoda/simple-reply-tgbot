@@ -44,10 +44,10 @@ class App
     params =
       if command.response_button_link
         { reply_markup: { inline_keyboard: [[{
-          text: 'Link', url: command.response_button_link
+          text: 'Link', url: command.response_button_link,
         }]] }.to_json }
       end
-    bot.api.answer_message message, reply: true, text: command.response_data, **params
+    bot.api.answer_message message, reply: true, text: command.response_data, entities: command.entities, **params
   end
 
   def send_response_sticker(message, command)

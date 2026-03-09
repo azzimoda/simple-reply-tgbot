@@ -111,11 +111,14 @@ class App
   def handle_add_response_text(message, user)
     log.debug 'handle_add_response_text'
 
+    # TODO: Handle test entities
+
     Command.new(
       user: user,
       key: user.key_to_add,
       response_kind: 'text',
-      response_data: message.text
+      response_data: message.text,
+      entities: message.entities.to_json
     ).tap(&:save)
   end
 
